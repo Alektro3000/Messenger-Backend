@@ -1,0 +1,34 @@
+services:
+  api:
+    image: messenger-api:latest
+    ports:
+      - "127.0.0.1:8080:5069"
+    depends_on:
+      db:
+        condition: "service_healthy"
+    volumes:
+      - avatars:/app/wwwroot
+    environment:
+      ConnectionStrings__SQL_Connection: "Server=db;Port=5432;Database=messenger;Username=postgres;Password=password;Gss Encryption Mode=Disable"
+      Jwt__SecretKey: "your-super-long-secret-key-at-least-32-characters"
+      
+    
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: messenger
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d messenger"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    
+volumes:
+  postgres_data:
+  avatars:
